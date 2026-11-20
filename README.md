@@ -19,7 +19,7 @@ The architecture spans three primary security zones:
 * **External Third-Party Zone:** An external **PCI-DSS-compliant Payment Gateway** handling card authorization and tokenization so raw cardholder data is minimized within the retail environment.
 
 ## 3. Data Flow Diagram (DFD) & Trust Boundaries
-Data flows between store terminals, local edge queues, Azure cloud services, and external payment endpoints across defined **Trust Boundaries**—the points where data moves from a lower-trust zone (such as a busy store network) into a higher-trust zone (such as the central cloud database).
+Data flows between store terminals, local edge queues, Azure cloud services, and external payment endpoints across defined **Trust Boundaries**, the points where data moves from a lower-trust zone (such as a busy store network) into a higher-trust zone (such as the central cloud database).
 
 ```mermaid
 flowchart LR
