@@ -8,13 +8,18 @@ The modeled system supports real-time sales transaction processing, inventory up
 > **Scope & Assessment Note:** This is a structured security architecture and operational risk assessment modeled on realistic multi-branch retail POS workflows. Third-party payment gateway internals and physical facility security outside the POS/network boundary are treated as out-of-scope dependencies.
 
 ## 2. System Architecture Overview
-The architecture spans three primary zones:
-* **Branch Store Network (Edge / Lower-Trust Zone):** Includes POS terminals, peripheral devices, a local store edge sync service, and an encrypted offline transaction queue for intermittent connectivity.
-* **Cloud Backend (Application & Data Zone):** Hosted on **Microsoft Azure** (or **AWS**), comprising an API Gateway, Identity Provider (IdP), Sales & Inventory Sync Service, and an encrypted relational database.
-* **External Third-Party Zone:** An external **PCI-DSS-compliant Payment Gateway** handling payment authorization and tokenization so raw cardholder data is minimized within the retail environment.
+The architecture spans three primary security zones:
+
+* **Branch Store Network (Edge / Lower-Trust Zone):** Includes POS terminals, peripheral devices (barcode scanners, receipt printers), a local store edge sync service, and an encrypted offline transaction queue that stores sales locally during internet outages.
+* **Cloud Backend (Application & Data Zone):** Hosted on **Microsoft Azure**, comprising:
+  * **Azure API Management (API Gateway):** Controls and validates incoming traffic from retail branches.
+  * **Microsoft Entra ID (Identity Provider):** Manages authentication and role-based access for store staff and administrators.
+  * **Azure App Service (Sales & Inventory Sync Service):** Processes batched sales data and pushes updated pricing and stock levels back to branches.
+  * **Azure SQL Database:** Stores encrypted transaction records, inventory tables, and audit logs.
+* **External Third-Party Zone:** An external **PCI-DSS-compliant Payment Gateway** handling card authorization and tokenization so raw cardholder data is minimized within the retail environment.
 
 ## 3. Data Flow Diagram (DFD) & Trust Boundaries
-Data flows between store terminals, local edge queues, cloud services, and external payment endpoints across defined **Trust Boundaries** (where trust levels, network segments, or administrative domains change).
+Data flows between store terminals, local edge queues, Azure cloud services, and external payment endpoints across defined **Trust Boundaries**—the points where data moves from a lower-trust zone (such as a busy store network) into a higher-trust zone (such as the central cloud database).
 
 ```mermaid
 flowchart LR
@@ -29,12 +34,12 @@ flowchart LR
         POS <-->|Encrypted Local Sync| LocalDB
     end
 
-    %% Trust Boundary 2: Cloud VPC
-    subgraph TB2 [Trust Boundary 2: Cloud Infrastructure VPC]
-        APIGW[Cloud API Gateway]
-        IdP[Identity Provider / MFA]
-        SyncSvc[POS Sync & Inventory Service]
-        CloudDB[(Central Sales & Inventory DB)]
+    %% Trust Boundary 2: Azure Cloud VPC
+    subgraph TB2 [Trust Boundary 2: Microsoft Azure Cloud Zone]
+        APIGW[Azure API Management]
+        IdP[Microsoft Entra ID / MFA]
+        SyncSvc[Azure App Service: Sync Engine]
+        CloudDB[(Azure SQL Database)]
 
         APIGW -->|Validate JWT| IdP
         APIGW -->|HTTPS / TLS 1.3| SyncSvc
