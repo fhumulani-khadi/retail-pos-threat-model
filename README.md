@@ -16,7 +16,37 @@ The architecture spans three primary zones:
 ## 3. Data Flow Diagram (DFD) & Trust Boundaries
 Data flows between store terminals, local edge queues, cloud services, and external payment endpoints across defined **Trust Boundaries** (where trust levels, network segments, or administrative domains change).
 
-![POS Cloud Sync Data Flow Diagram](diagrams/pos-cloud-sync-dfd.png)
+```mermaid
+flowchart LR
+    %% External Entities
+    Cashier([Cashier / Store Manager])
+    PayGW([3rd-Party Payment Gateway])
+
+    %% Trust Boundary 1: Branch Store LAN
+    subgraph TB1 [Trust Boundary 1: Branch Store Network]
+        POS[POS Terminal App]
+        LocalDB[(Local Offline SQLite Cache)]
+        POS <-->|Encrypted Local Sync| LocalDB
+    end
+
+    %% Trust Boundary 2: Cloud VPC
+    subgraph TB2 [Trust Boundary 2: Cloud Infrastructure VPC]
+        APIGW[Cloud API Gateway]
+        IdP[Identity Provider / MFA]
+        SyncSvc[POS Sync & Inventory Service]
+        CloudDB[(Central Sales & Inventory DB)]
+
+        APIGW -->|Validate JWT| IdP
+        APIGW -->|HTTPS / TLS 1.3| SyncSvc
+        SyncSvc <-->|Read/Write SQL| CloudDB
+    end
+
+    %% Cross-Boundary Flows
+    Cashier -->|PIN / Badge Login| POS
+    POS -->|Auth & Sales Sync - TLS 1.3| APIGW
+    POS -->|Card Token Request - TLS 1.3| PayGW
+    PayGW -->|Payment Approval Token| POS
+```
 
 ## 4. Repository Structure
 * **[01_Asset_and_Trust_Boundary_Inventory.md](./01_Asset_and_Trust_Boundary_Inventory.md)** — Critical data assets, role/privilege matrix, and network trust boundary definitions.
@@ -29,3 +59,4 @@ Data flows between store terminals, local edge queues, cloud services, and exter
 * **NIST Cybersecurity Framework (CSF 2.0)** (Identify, Protect, Detect, Respond, Recover)
 * **ITIL v4 Incident Management** (Triage, Escalation, Containment, Root Cause Analysis)
 * **PCI-DSS v4.0 Concepts** (Scope reduction via tokenization and encrypted transport)
+
