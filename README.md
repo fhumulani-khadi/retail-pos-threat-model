@@ -58,5 +58,4 @@ flowchart LR
 * **STRIDE** (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege)
 * **NIST Cybersecurity Framework (CSF 2.0)** (Identify, Protect, Detect, Respond, Recover)
 * **ITIL v4 Incident Management** (Triage, Escalation, Containment, Root Cause Analysis)
-* **PCI-DSS v4.0 Concepts** (Scope reduction via tokenization and encrypted transport)
-
+* **PCI-DSS v4.0 Concepts** (Scope reduction through tokenization and encrypted transport)
